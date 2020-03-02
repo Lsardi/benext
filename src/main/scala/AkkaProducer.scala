@@ -5,13 +5,13 @@ object AkkaProducer{
   import akka.actor._
   import com.rabbitmq.client.ConnectionFactory
   import scala.io.Source
-  case class Send()
+  case class Send(bufferedSource)
 
   class Produceur extends Actor {
     def receive = {
 
 
-      case Send() => {
+      case Send(bufferedSource) => {
 
         val factory = new ConnectionFactory()
         factory.setHost("localhost")
@@ -20,7 +20,6 @@ object AkkaProducer{
 
 
         channel.queueDeclare("hello", false, false, false, null)
-        val bufferedSource = Source.fromFile("/Users/user/Desktop/title.basics.tsv")
 
         for (line <- bufferedSource.getLines) {
           val message = line.split('\t')
@@ -47,7 +46,9 @@ object AkkaProducer{
     }
   }
   def main(args: Array[String]){
-    val system = ActorSystem("match")
+    val system = ActorSystem("producer")
     val borg = system.actorOf(Props[Produceur], name ="My_produceur")
-    borg ! Send()
+    val bufferedSource = Source.fromFile("/Users/user/Desktop/title.basics.tsv")
+
+    borg ! Send(bufferedSource)
   }}
